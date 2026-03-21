@@ -1,0 +1,5 @@
+{
+  "name": "Message in a Bottle",
+  "description": "An anonymous, slow-tech messaging platform where messages are delivered once to physical devices around the world.",
+  "requestFramePermissions": []
+}
