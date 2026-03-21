@@ -4,6 +4,7 @@ import path from "path";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 import { Filter } from "bad-words";
+import cors from "cors";
 
 // Lazy initialize Supabase
 let supabaseClient: any = null;
@@ -21,6 +22,9 @@ const getSupabase = () => {
 
 const filter = new Filter();
 const app = express();
+
+// Enable CORS for all origins (needed for simulator and cross-origin requests)
+app.use(cors());
 app.use(express.json());
 
 // Helper to hash IP
@@ -28,7 +32,7 @@ const hashIP = (ip: string) => {
   return crypto.createHash("sha256").update(ip + (process.env.IP_SALT || "bottle-salt")).digest("hex");
 };
 
-// --- API Routes (Synchronous for Vercel/Serverless) ---
+// --- API Routes ---
 
 // Submit Message
 app.post("/api/messages", async (req, res) => {
@@ -95,7 +99,7 @@ app.get("/api/my-last-message", async (req, res) => {
     const supabase = getSupabase();
     const { userId } = req.query;
     const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "unknown";
-    const senderHash = userId || hashIP(ip as string);
+    const senderHash = (userId as string) || hashIP(ip as string);
 
     const { data, error } = await supabase
       .from("messages")
@@ -121,8 +125,8 @@ app.get("/api/get-message", async (req, res) => {
     }
 
     const { data, error } = await supabase.rpc("consume_random_message", {
-      p_delivered_location: req.query.location || "Unknown",
-      p_device_id: req.query.deviceId || "Unknown"
+      p_delivered_location: (req.query.location as string) || "Unknown",
+      p_device_id: (req.query.deviceId as string) || "Unknown"
     });
 
     if (error) throw error;
@@ -147,6 +151,8 @@ async function startServer() {
       console.log(`Server running on http://localhost:${PORT}`);
     });
   } else {
+    // In production (Vercel), static files are served via vercel.json
+    // This fallback is only for non-API routes that aren't caught by Vercel
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
     app.get("*", (req, res) => {
