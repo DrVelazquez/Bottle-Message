@@ -17,8 +17,12 @@
       "dest": "/server.ts"
     },
     {
+      "src": "/assets/(.*)",
+      "dest": "/dist/assets/$1"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/server.ts"
     }
   ]
 }

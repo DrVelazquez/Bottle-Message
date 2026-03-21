@@ -23,14 +23,21 @@ export default function App() {
   const [lastMessage, setLastMessage] = useState<Message | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [userId] = useState(() => {
+    const saved = localStorage.getItem('bottle_user_id');
+    if (saved) return saved;
+    const newId = crypto.randomUUID();
+    localStorage.setItem('bottle_user_id', newId);
+    return newId;
+  });
 
   useEffect(() => {
     fetchLastMessage();
-  }, []);
+  }, [userId]);
 
   const fetchLastMessage = async () => {
     try {
-      const res = await fetch('/api/my-last-message');
+      const res = await fetch(`/api/my-last-message?userId=${userId}`);
       const data = await res.json();
       if (data.message) {
         setLastMessage(data.message);
@@ -52,7 +59,7 @@ export default function App() {
       const res = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: message }),
+        body: JSON.stringify({ content: message, userId }),
       });
 
       const data = await res.json();

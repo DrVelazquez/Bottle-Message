@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 Simulator - Message in a Bottle</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #f0f0f0; }
+        .card { background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px; width: 100%; }
+        input { width: 100%; padding: 0.5rem; margin: 0.5rem 0; box-sizing: border-box; }
+        button { width: 100%; padding: 0.75rem; background: #3d3d2d; color: white; border: none; border-radius: 0.5rem; cursor: pointer; margin-top: 1rem; }
+        button:hover { background: #5a5a40; }
+        #result { margin-top: 1rem; padding: 1rem; background: #f9f9f9; border-radius: 0.5rem; min-height: 50px; font-style: italic; }
+        .label { font-size: 0.8rem; color: #666; margin-top: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>ESP32 Simulator</h2>
+        <p>This simulates what your physical device would do.</p>
+        
+        <label class="label">App URL (Vercel)</label>
+        <input type="text" id="appUrl" placeholder="https://your-app.vercel.app" value="">
+        
+        <label class="label">Device API Key</label>
+        <input type="password" id="apiKey" placeholder="Your DEVICE_API_KEY">
+        
+        <label class="label">Location</label>
+        <input type="text" id="location" value="Buenos Aires, Argentina">
+
+        <button onclick="getMessage()">Get Random Bottle</button>
+
+        <div id="result">Waiting for action...</div>
+    </div>
+
+    <script>
+        // Set default URL if we are running on the same domain
+        if (window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1')) {
+            document.getElementById('appUrl').value = window.location.origin;
+        }
+
+        async function getMessage() {
+            const url = document.getElementById('appUrl').value;
+            const key = document.getElementById('apiKey').value;
+            const loc = document.getElementById('location').value;
+            const resultDiv = document.getElementById('result');
+
+            if (!url || !key) {
+                alert("Please enter App URL and API Key");
+                return;
+            }
+
+            resultDiv.innerText = "Searching the ocean...";
+
+            try {
+                const response = await fetch(`${url}/api/get-message?location=${encodeURIComponent(loc)}&deviceId=SIMULATOR_01`, {
+                    headers: {
+                        'x-api-key': key
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    resultDiv.innerHTML = `<span style="color: red;">Error: ${data.error}</span>`;
+                } else if (data.message) {
+                    resultDiv.innerHTML = `<strong>Message Found!</strong><br>"${data.message.content}"`;
+                } else {
+                    resultDiv.innerText = "No bottles found drifting right now.";
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `<span style="color: red;">Network Error: ${err.message}</span>`;
+            }
+        }
+    </script>
+</body>
+</html>
