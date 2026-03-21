@@ -94,7 +94,7 @@ export default function App() {
           </motion.div>
           <h1 className="text-4xl font-light tracking-tight mb-4 text-[#3D3D2D]">Message in a Bottle</h1>
           <p className="text-sm text-[#7A7A6A] font-light italic max-w-xs mx-auto leading-relaxed">
-            "A thought cast into the digital tides, destined for a single shore."
+            "Throw your thoughts into the digital ocean. It will be read sometime, somewhere..."
           </p>
         </header>
 
@@ -106,7 +106,7 @@ export default function App() {
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Whisper your message here..."
+                placeholder="Write your message here..."
                 maxLength={140}
                 disabled={isSubmitting}
                 className={cn(
@@ -153,7 +153,7 @@ export default function App() {
                     className="flex items-center space-x-2 text-xs text-[#5A5A40] font-medium italic"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>The tides have taken your message.</span>
+                    <span>Your message has been cast into the ocean.</span>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -219,7 +219,7 @@ export default function App() {
                           </motion.div>
                           <div className="flex items-center space-x-2 text-[#AFA99B]">
                             <Clock className="w-3.5 h-3.5 animate-pulse" />
-                            <span className="text-[10px] font-bold tracking-[0.2em] uppercase">Drifting in the tides...</span>
+                            <span className="text-[10px] font-bold tracking-[0.2em] uppercase">Waiting to be found...</span>
                           </div>
                         </div>
                       )}
