@@ -217,12 +217,40 @@ export default function App() {
                             }}
                             className="relative"
                           >
-                            <svg width="40" height="60" viewBox="0 0 40 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-40">
-                              <path d="M12 10V5C12 3.89543 12.8954 3 14 3H26C27.1046 3 28 3.89543 28 5V10C28 11.1046 28.8954 12 30 12H32C35.3137 12 38 14.6863 38 18V50C38 53.3137 35.3137 56 32 56H8C4.68629 56 2 53.3137 2 50V18C2 14.6863 4.68629 12 8 12H10C11.1046 12 12 11.1046 12 10Z" stroke="#5A5A40" strokeWidth="2"/>
-                              <path d="M15 15L25 15" stroke="#5A5A40" strokeWidth="2" strokeLinecap="round"/>
-                              <rect x="10" y="25" width="20" height="15" rx="2" stroke="#5A5A40" strokeWidth="1" strokeDasharray="2 2"/>
+                            <svg width="60" height="90" viewBox="0 0 60 90" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-60 drop-shadow-md">
+                              {/* Bottle Body */}
+                              <path 
+                                d="M20 15V8C20 6.89543 20.8954 6 22 6H38C39.1046 6 40 6.89543 40 8V15C40 16.1046 40.8954 17 42 17H45C50.5228 17 55 21.4772 55 27V75C55 80.5228 50.5228 85 45 85H15C9.47715 85 5 80.5228 5 75V27C5 21.4772 9.47715 17 15 17H18C19.1046 17 20 16.1046 20 15Z" 
+                                stroke="#5A5A40" 
+                                strokeWidth="2"
+                                fill="white"
+                                fillOpacity="0.3"
+                              />
+                              
+                              {/* Water inside */}
+                              <path 
+                                d="M5.5 60C5.5 60 15 55 30 60C45 65 54.5 60 54.5 60V75C54.5 80.5228 50.0228 85 44.5 85H15.5C9.97715 85 5.5 80.5228 5.5 75V60Z" 
+                                fill="#2D5A27" 
+                                fillOpacity="0.15"
+                              />
+                              
+                              {/* Cork */}
+                              <rect x="22" y="2" width="16" height="6" rx="1" fill="#8B4513" fillOpacity="0.6" />
+                              
+                              {/* Paper inside */}
+                              <motion.rect 
+                                x="18" y="35" width="24" height="35" rx="2" 
+                                fill="#FFFDF7" 
+                                stroke="#5A5A40" 
+                                strokeWidth="0.5"
+                                animate={{ rotate: [-2, 2, -2] }}
+                                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                              />
+                              <line x1="22" y1="45" x2="38" y2="45" stroke="#5A5A40" strokeWidth="0.5" strokeOpacity="0.3" />
+                              <line x1="22" y1="52" x2="38" y2="52" stroke="#5A5A40" strokeWidth="0.5" strokeOpacity="0.3" />
+                              <line x1="22" y1="59" x2="38" y2="59" stroke="#5A5A40" strokeWidth="0.5" strokeOpacity="0.3" />
                             </svg>
-                            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-12 h-1 bg-[#5A5A40] blur-md opacity-10"></div>
+                            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-2 bg-[#5A5A40] blur-lg opacity-10"></div>
                           </motion.div>
                           <div className="flex items-center space-x-2 text-[#AFA99B]">
                             <Clock className="w-3.5 h-3.5 animate-pulse" />

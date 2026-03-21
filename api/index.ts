@@ -1,7 +1,7 @@
 import express from "express";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
-import Filter from "bad-words";
+import { Filter } from "bad-words";
 import cors from "cors";
 
 // Lazy initialize Supabase
@@ -23,13 +23,7 @@ const getSupabase = () => {
 // Robust Filter initialization
 let filter: any;
 try {
-  if (typeof Filter === 'function') {
-    filter = new (Filter as any)();
-  } else if (Filter && (Filter as any).Filter) {
-    filter = new (Filter as any).Filter();
-  } else {
-    throw new Error("Could not find Filter constructor");
-  }
+  filter = new Filter();
 } catch (e) {
   console.warn("Failed to initialize bad-words filter, using fallback:", e);
   filter = { isProfane: () => false };
