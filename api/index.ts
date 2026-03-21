@@ -143,4 +143,9 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   res.status(500).json({ error: "Internal Server Error" });
 });
 
+// 404 handler for API
+app.use((req, res) => {
+  res.status(404).json({ error: `Route ${req.method} ${req.url} not found. Ensure you are using the base App URL in the simulator.` });
+});
+
 export default app;

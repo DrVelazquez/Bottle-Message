@@ -40,9 +40,9 @@
         }
 
         async function getMessage() {
-            const url = document.getElementById('appUrl').value;
-            const key = document.getElementById('apiKey').value;
-            const loc = document.getElementById('location').value;
+            let url = document.getElementById('appUrl').value.trim();
+            const key = document.getElementById('apiKey').value.trim();
+            const loc = document.getElementById('location').value.trim();
             const resultDiv = document.getElementById('result');
 
             if (!url || !key) {
@@ -50,14 +50,28 @@
                 return;
             }
 
+            // Clean up the URL if the user pasted the full endpoint
+            url = url.replace(/\/api\/get-message\/?$/, '');
+            url = url.replace(/\/$/, ''); // Remove trailing slash
+
             resultDiv.innerText = "Searching the ocean...";
 
             try {
-                const response = await fetch(`${url}/api/get-message?location=${encodeURIComponent(loc)}&deviceId=SIMULATOR_01`, {
+                const endpoint = `${url}/api/get-message?location=${encodeURIComponent(loc)}&deviceId=SIMULATOR_01`;
+                console.log("Fetching from:", endpoint);
+                
+                const response = await fetch(endpoint, {
                     headers: {
                         'x-api-key': key
                     }
                 });
+
+                const contentType = response.headers.get("content-type");
+                if (contentType && !contentType.includes("application/json")) {
+                    const text = await (await response.clone()).text();
+                    console.error("Non-JSON response received:", text);
+                    throw new Error("Server returned HTML instead of JSON. Check your App URL.");
+                }
 
                 const data = await response.json();
 
