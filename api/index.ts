@@ -20,16 +20,65 @@ const getSupabase = () => {
   return supabaseClient;
 };
 
-// Robust Filter initialization
+// Robust Filter initialization with Spanish support
 let filter: any;
 try {
   filter = new Filter();
+  // Add some common Spanish bad words to the filter
+  const spanishBadWords = [
+    "boludo", "pelotudo", "concha", "puto", "puta", "mierda", "carajo", 
+    "culiao", "pendejo", "chingar", "joder", "gilipollas"
+  ];
+  filter.addWords(...spanishBadWords);
 } catch (e) {
   console.warn("Failed to initialize bad-words filter, using fallback:", e);
   filter = { isProfane: () => false };
 }
 
 const app = express();
+
+// --- Strict Content Filtering Logic ---
+const isStrictlyClean = (text: string): { clean: boolean; reason?: string } => {
+  const content = text.toLowerCase();
+
+  // 1. Basic Profanity (English + Spanish)
+  if (filter.isProfane(content)) {
+    return { clean: false, reason: "Obscene content detected" };
+  }
+
+  // 2. No URLs/Links (Spam prevention)
+  const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)|([^\s]+\.(com|net|org|io|me|tk|ml|ga|cf|gq|xyz|biz|info|es|ar|cl|mx))/i;
+  if (urlRegex.test(content)) {
+    return { clean: false, reason: "Links and URLs are not allowed" };
+  }
+
+  // 3. No Emails (Privacy/Spam)
+  const emailRegex = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i;
+  if (emailRegex.test(content)) {
+    return { clean: false, reason: "Email addresses are not allowed" };
+  }
+
+  // 4. No excessive emojis (Visual spam)
+  const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu;
+  const emojiCount = (content.match(emojiRegex) || []).length;
+  if (emojiCount > 3) {
+    return { clean: false, reason: "Too many emojis (max 3)" };
+  }
+
+  // 5. No repetitive characters (e.g., "aaaaaaa")
+  const repetitiveRegex = /(.)\1{5,}/;
+  if (repetitiveRegex.test(content)) {
+    return { clean: false, reason: "Repetitive characters detected" };
+  }
+
+  // 6. No phone numbers (Privacy)
+  const phoneRegex = /(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4,}/;
+  if (phoneRegex.test(content)) {
+    return { clean: false, reason: "Phone numbers are not allowed" };
+  }
+
+  return { clean: true };
+};
 
 // Enable CORS for all origins
 app.use(cors());
@@ -62,8 +111,9 @@ app.post("/api/messages", async (req, res) => {
       return res.status(400).json({ error: "Message too long (max 140 chars)" });
     }
 
-    if (filter.isProfane(content)) {
-      return res.status(400).json({ error: "Obscene content is not allowed" });
+    const filterResult = isStrictlyClean(content);
+    if (!filterResult.clean) {
+      return res.status(400).json({ error: filterResult.reason });
     }
 
     const today = new Date();
