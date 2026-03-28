@@ -108,24 +108,25 @@ export default function Auth({ onSuccess }: AuthProps) {
           </div>
 
           {/* Math Captcha */}
-          <div className="p-4 bg-[#F5F2ED] rounded-2xl border border-[#DED7C9]/50">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold uppercase tracking-widest text-[#7A7A6A]">Verify you are human</span>
-              <button type="button" onClick={generateCaptcha} className="text-[#AFA99B] hover:text-[#5A5A40] transition-colors">
-                <RefreshCw className="w-4 h-4" />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#AFA99B]">Human Verification</span>
+              <button type="button" onClick={generateCaptcha} className="text-[#AFA99B] hover:text-[#5A5A40] transition-colors p-1">
+                <RefreshCw className="w-3.5 h-3.5" />
               </button>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-xl font-serif text-[#3D3D2D] bg-white px-4 py-2 rounded-lg border border-[#DED7C9]">
-                {captcha.a} + {captcha.b} = ?
+            <div className="flex items-stretch space-x-3 h-14">
+              <div className="flex-1 flex items-center justify-center bg-[#F5F2ED] border border-[#DED7C9] rounded-xl text-lg font-serif text-[#3D3D2D] select-none">
+                {captcha.a} + {captcha.b}
               </div>
+              <div className="flex items-center justify-center text-[#AFA99B] font-light">=</div>
               <input
                 type="number"
                 required
-                placeholder="Answer"
+                placeholder="?"
                 value={captchaInput}
                 onChange={(e) => setCaptchaInput(e.target.value)}
-                className="flex-1 px-4 py-2 bg-white border border-[#DED7C9] rounded-lg focus:outline-none focus:border-[#5A5A40]"
+                className="w-24 px-4 bg-white border border-[#DED7C9] rounded-xl focus:outline-none focus:border-[#5A5A40] text-center text-lg transition-all"
               />
             </div>
           </div>
