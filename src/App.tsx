@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Send, Waves, MapPin, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Send, Waves, MapPin, Clock, CheckCircle2, AlertCircle, LogOut, User } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { createClient } from '@supabase/supabase-js';
+import Auth from './components/Auth';
+
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -18,26 +25,39 @@ interface Message {
 }
 
 export default function App() {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastMessage, setLastMessage] = useState<Message | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [userId] = useState(() => {
-    const saved = localStorage.getItem('bottle_user_id');
-    if (saved) return saved;
-    const newId = crypto.randomUUID();
-    localStorage.setItem('bottle_user_id', newId);
-    return newId;
-  });
 
   useEffect(() => {
-    fetchLastMessage();
-  }, [userId]);
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchLastMessage();
+    }
+  }, [user]);
 
   const fetchLastMessage = async () => {
+    if (!user) return;
     try {
-      const res = await fetch(`/api/my-last-message?userId=${userId}`);
+      const res = await fetch(`/api/my-last-message?userId=${user.id}`);
       const data = await res.json();
       if (data.message) {
         setLastMessage(data.message);
@@ -49,7 +69,7 @@ export default function App() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() || isSubmitting) return;
+    if (!message.trim() || isSubmitting || !user) return;
 
     setIsSubmitting(true);
     setError(null);
@@ -59,7 +79,7 @@ export default function App() {
       const res = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: message, userId }),
+        body: JSON.stringify({ content: message, userId: user.id }),
       });
 
       const data = await res.json();
@@ -80,6 +100,28 @@ export default function App() {
     }
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setLastMessage(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F5F2ED] flex items-center justify-center">
+        <motion.div 
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+        >
+          <Waves className="w-8 h-8 text-[#5A5A40] opacity-40" />
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Auth onSuccess={(u) => setUser(u)} />;
+  }
+
   return (
     <div className="min-h-screen bg-[#F5F2ED] text-[#2C2C2C] font-serif selection:bg-[#E6E0D4]">
       {/* Background Waves Decoration */}
@@ -87,6 +129,21 @@ export default function App() {
         <svg className="absolute bottom-0 w-full h-64" viewBox="0 0 1440 320" preserveAspectRatio="none">
           <path fill="#2D5A27" d="M0,160L48,176C96,192,192,224,288,224C384,224,480,192,576,165.3C672,139,768,117,864,128C960,139,1056,181,1152,186.7C1248,192,1344,160,1392,144L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
         </svg>
+      </div>
+
+      {/* User Bar */}
+      <div className="fixed top-6 right-6 z-50 flex items-center space-x-4">
+        <div className="hidden md:flex flex-col items-end">
+          <span className="text-[10px] uppercase tracking-widest text-[#AFA99B] font-bold">Logged in as</span>
+          <span className="text-xs text-[#5A5A40] font-medium">{user.email}</span>
+        </div>
+        <button 
+          onClick={handleLogout}
+          className="p-3 bg-white/80 backdrop-blur-sm border border-[#DED7C9] rounded-full hover:bg-white transition-all shadow-sm group"
+          title="Logout"
+        >
+          <LogOut className="w-4 h-4 text-[#7A7A6A] group-hover:text-[#8B4513] transition-colors" />
+        </button>
       </div>
 
       <main className="max-w-xl mx-auto px-6 py-16 md:py-24 relative z-10">
